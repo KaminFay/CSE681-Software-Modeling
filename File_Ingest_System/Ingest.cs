@@ -33,7 +33,7 @@ namespace File_Ingest_System
             string[] filesInDirectory = Directory.GetFiles(_projectDirectory);
             foreach (string fileName in filesInDirectory)
             {
-                if (fileName.EndsWith(".cs") && !fileName.Contains("\\obj\\") && !fileName.Contains("\\AssemblyInfo"))
+                if (fileName.EndsWith(".cs") && !fileName.Contains("\\obj\\") && !fileName.Contains("AssemblyInfo"))
                 {
                     Console.WriteLine(fileName);
                     _CSharpFiles.Add(fileName);
