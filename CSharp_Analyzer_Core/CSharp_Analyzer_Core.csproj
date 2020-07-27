@@ -7,6 +7,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\File_Ingest_System\File_Ingest_System.csproj" />
+      <ProjectReference Include="..\HTML_Builder_Systeem\HTML_Builder_Systeem.csproj" />
       <ProjectReference Include="..\Parser\Parser.csproj" />
     </ItemGroup>
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CodeAnalysis;
 using File_Ingest_System;
+using HTML_Builder_System;
 
 namespace CSharp_Analyzer_Core
 {
@@ -63,6 +64,8 @@ namespace CSharp_Analyzer_Core
               Console.Write("\n");
               semi.close();
             }
+
+            HTML_Builder.generateFileList(CSharpFiles);
             Console.Write("\n\n");
             
         }
