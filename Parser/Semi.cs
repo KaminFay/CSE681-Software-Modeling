@@ -131,7 +131,7 @@ namespace CSsemi
 
     public CSemiExp()
     {
-      toker = new CToker();
+      toker = new CToker {returnComments = true};
       semiExp = new List<string>();
       discardComments = true;  // not implemented yet
       returnNewLines = true;
@@ -175,6 +175,7 @@ namespace CSsemi
     {
       return FindLast(str);
     }
+    
     //----< have to override GetHashCode() >-----------------------------
 
     override public System.Int32 GetHashCode()

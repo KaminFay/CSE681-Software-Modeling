@@ -137,7 +137,7 @@ namespace CodeAnalysis
 
         BuildCodeAnalyzer builder = new BuildCodeAnalyzer(semi);
         Parser parser = builder.build();
-
+        
         try
         {
           while (semi.getSemi())

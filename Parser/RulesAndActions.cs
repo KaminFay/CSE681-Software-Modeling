@@ -392,6 +392,35 @@ namespace CodeAnalysis
   /////////////////////////////////////////////////////////
   // rule to dectect function definitions
 
+  public class DetectComment : ARule
+  {
+    public static bool isSpecialToken(string token)
+    {
+      string[] SpecialToken = {"//", "/*", "*/"};
+      foreach (string stoken in SpecialToken)
+        if (stoken == token)
+          return true;
+      return false;
+    }
+    
+    public override bool test(CSsemi.CSemiExp semi)
+    {
+      Display.displayRules(actionDelegate, "rule   DetectComment");
+      if (semi[semi.count - 1] != "{")
+        return false;
+
+      int index = semi.FindFirst("(");
+      if (index > 0 && !isSpecialToken(semi[index - 1]))
+      {
+        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
+        local.Add("function").Add(semi[index - 1]);
+        doActions(local);
+        return true;
+      }
+      return false;
+    }
+  }
+
   public class DetectFunction : ARule
   {
     public static bool isSpecialToken(string token)
@@ -516,6 +545,10 @@ namespace CodeAnalysis
       DetectNamespace detectNS = new DetectNamespace();
       detectNS.add(push);
       parser.add(detectNS);
+
+      DetectComment detectCM = new DetectComment();
+      detectCM.add(push);
+      parser.add(detectCM);
 
       // capture class info
       DetectClass detectCl = new DetectClass();

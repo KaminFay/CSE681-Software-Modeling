@@ -52,13 +52,14 @@ namespace CSharp_Analyzer_Core
               );
               foreach (Elem e in table)
               {
-                if (e.type == "class" || e.type == "struct")
+                if (e.type == "class" || e.type == "struct" || e.type == "Comment")
                   Console.Write("\n");
                 Console.Write(
                   "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}", 
                   e.type, e.name, e.beginLine, e.endLine, e.beginScopeCount, e.endScopeCount+1,
                   e.endLine-e.beginLine+1, e.endScopeCount-e.beginScopeCount+1
                 );
+                HTML_Builder.buildFileStructure(file, e.type, e.name, e.beginLine, e.endLine);
               }
             
               Console.Write("\n");
@@ -66,6 +67,10 @@ namespace CSharp_Analyzer_Core
             }
 
             HTML_Builder.generateFileList(CSharpFiles);
+            foreach (string file in CSharpFiles)
+            {
+              HTML_Builder.buildPageContent(file.Substring(file.LastIndexOf("\\") +1), CSharpFiles);
+            }
             Console.Write("\n\n");
             
         }

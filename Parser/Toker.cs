@@ -111,13 +111,14 @@ namespace CStoker
     private TextReader ts = null;            // source of tokens
     private List<string> tokBuffer = null;   // intermediate token store
     private string lineRemainder;            // unprocessed line fragment
+    private int lineNumber = 0;
 
     //----< return comments? property >----------------------------------
 
     public bool returnComments
     {
       get; set;
-    }
+    } = true;
     //----< line count property >----------------------------------------
 
     public int lineCount
@@ -131,7 +132,6 @@ namespace CStoker
     {
       tokBuffer = new List<string>();
       lineCount = 0;
-      returnComments = false;
     }
     //----< opens file stream for tokenizing >---------------------------
 
@@ -410,11 +410,12 @@ namespace CStoker
       int pos = lineRemainder.IndexOf("//");
       if(pos == 0)                          // whole line is C++ comment
       {
+        //Console.WriteLine("Found a comment");
         if(lineRemainder[lineRemainder.Length-1] == '\n')
         {
           lineRemainder = lineRemainder.Remove(lineRemainder.Length-1,1);
           tokBuffer.Add(lineRemainder);
-          lineRemainder = "";
+          Console.WriteLine(tokBuffer[0]);
           return "\n";
         }
         else
