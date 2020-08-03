@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CodeAnalysis;
 using File_Ingest_System;
 using HTML_Builder_System;
+using Post_Processor_System;
 
 namespace CSharp_Analyzer_Core
 {
@@ -11,7 +12,7 @@ namespace CSharp_Analyzer_Core
         static void Main(string[] args)
         {
             List<string> CSharpFiles = Ingest.GenerateFileStructure(args);
-            
+            List<string> contentList = new List<string>();
             foreach (string file in CSharpFiles)
             {
               Console.Write("\n  Processing file {0}\n", System.IO.Path.GetFileName(file));
@@ -59,7 +60,10 @@ namespace CSharp_Analyzer_Core
                   e.type, e.name, e.beginLine, e.endLine, e.beginScopeCount, e.endScopeCount+1,
                   e.endLine-e.beginLine+1, e.endScopeCount-e.beginScopeCount+1
                 );
-                HTML_Builder.buildFileStructure(file, e.type, e.name, e.beginLine, e.endLine);
+                if (e.type == "function")
+                  contentList = PostProcessor.getContentBetweenLines(file, e.beginLine, e.endLine);
+                
+                HTML_Builder.buildFileStructure(file, e.type, e.name, e.beginLine, e.endLine, contentList);
               }
             
               Console.Write("\n");

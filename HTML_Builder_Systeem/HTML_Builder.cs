@@ -14,8 +14,10 @@ namespace HTML_Builder_System
         public int beginLine;
         public int endLine;
         public bool cataloged;
+        public List<string> contentList;
+        public string bodyContent;
 
-        public FileStructure(string fileName, string type, string name, int bLine, int eLine)
+        public FileStructure(string fileName, string type, string name, int bLine, int eLine, List<string> contentList)
         {
             this.fileName = fileName;
             this.type = type;
@@ -23,6 +25,9 @@ namespace HTML_Builder_System
             this.beginLine = bLine;
             this.endLine = eLine;
             cataloged = false;
+            this.contentList = contentList;
+            bodyContent = "";
+
         }
     }
 
@@ -37,10 +42,10 @@ namespace HTML_Builder_System
             private static List<string> htmlPageList = new List<string>();
 
 
-            public static void buildFileStructure(string fileName, string type, string name, int bLine, int eLine)
+            public static void buildFileStructure(string fileName, string type, string name, int bLine, int eLine, List<string> contentList)
             {
                 FileStructure structure =
-                    new FileStructure(separateFileNameForHTML(fileName), type, name, bLine, eLine);
+                    new FileStructure(separateFileNameForHTML(fileName), type, name, bLine, eLine, contentList);
                 fileStructureList.Add(structure);
             }
 
@@ -68,22 +73,14 @@ namespace HTML_Builder_System
             {
                 foreach (string file in files)
                 {
-                    //htmlPageContent += buildHTMLHeader();
-
-                    htmlPageContent += file + "<br>";
-                    htmlPageContent += "File List: <br>";
                     foreach (string fileName in files)
                     {
                         string strippedName = separateFileNameForHTML(fileName);
                         fileNameList.Add(strippedName);
-                        htmlPageContent += "<a href=\"" + "file:///" + fullPath + strippedName + ".html" + "\">" +
-                                           strippedName + ".html" + "</a>" + "<br>";
                     }
 
                     string finalName = fullPath + separateFileNameForHTML(file) + ".html";
                     htmlPageList.Add(finalName);
-                    //File.WriteAllText(finalName, htmlPageContent);
-                    //htmlPageContent = String.Empty;
                 }
             }
 
@@ -97,23 +94,26 @@ namespace HTML_Builder_System
                 htmlPageContent += buildHTMLHeader();
             }
 
-            static void topOfCollapsablePanel(string type, string title, int begin, int end)
+            static void topOfCollapsablePanel(string type, string title, int begin, int end, int iteration)
             {
-                htmlPageContent += "<div class=\"container\">\n";
+                string tag = type + title.Replace(" ", "") + "_" + iteration;
+                htmlPageContent += "<div class=\"container\" style=\"width:inherit\">\n";
                 htmlPageContent += "<div class=\"panel-group\">\n";
                 htmlPageContent += "<div class=\"panel panel-default\">\n";
                 htmlPageContent += "<div class=\"panel-heading\">\n";
                 htmlPageContent += "<h4 class=\"panel-title\">\n";
-                htmlPageContent += "<a data-toggle=\"collapse\" href=\"#" + type + title.Replace(" ", "") + "\">" +
-                                   type + ": " + title + " Lines:" + begin + "->" + end + "</a>\n";
+                htmlPageContent += "<a data-toggle=\"collapse\" href=\"#" + tag + "\">" +
+                                   type + ": " + title + "Line: " + begin + "->" + end + " " + "</a>\n";
                 htmlPageContent += "</h4>\n";
-                htmlPageContent += "<div id=\"" + type + title.Replace(" ", "") +
-                                   "\" class=\"panel-collapse collapse\">\n";
-                htmlPageContent += "<div class=\"panel-body\">\n";
+                htmlPageContent += "</div>\n";
+                htmlPageContent += "<div id=\"" + tag + "\" class=\"panel-collapse collapse\">\n";
+                //htmlPageContent += "<div class=\"panel-body\">\n";
             }
 
             static void buildCollapsablePanel(List<FileStructure> currentFileStructure)
             {
+                int iteration = 0;
+                
 
                 foreach (var currentType in currentFileStructure.ToList())
                 {
@@ -129,12 +129,10 @@ namespace HTML_Builder_System
                             htmlPageContent += "</div>\n";
                             htmlPageContent += "</div>\n";
                             htmlPageContent += "</div>\n";
-                            htmlPageContent += "</div>\n";
-                            htmlPageContent += "</div>\n";
                         }
 
                         topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine,
-                            currentType.endLine);
+                            currentType.endLine, iteration);
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
                         buildCollapsablePanel(currentFileStructure.ToList());
                     }
@@ -142,9 +140,10 @@ namespace HTML_Builder_System
                              currentType.name != "while" && currentType.name != "foreach")
                     {
                         topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine,
-                            currentType.endLine);
+                            currentType.endLine, iteration);
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
-                        htmlPageContent += "Datatatatat\n";
+                        currentType.bodyContent = generateInteralContent(currentType.contentList);
+                        htmlPageContent += currentType.bodyContent;
                         bottomOfCollapsablePanel();
 
                     }
@@ -153,10 +152,23 @@ namespace HTML_Builder_System
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
                     }
 
+                    iteration++;
                     //bottomOfCollapsablePanel();
                 }
             }
 
+            static string generateInteralContent(List<string> contentList)
+            {
+                string bodyContent = "";
+                bodyContent += "<pre><p>";
+                foreach(string content in contentList)
+                {
+                    bodyContent += content + "\n";
+                }
+
+                bodyContent += "</p></pre>";
+                return bodyContent;
+            }
 
             static void bottomOfCollapsablePanel()
             {
@@ -170,25 +182,29 @@ namespace HTML_Builder_System
             {
 
                 htmlPageContent += buildHTMLHeader();
-                
 
+
+                htmlPageContent += "<div class = \"fileList\" style=\"text-align:center\">\n";
+                htmlPageContent += "<h2>Project File List: </h2>\n";
+                htmlPageContent += "<ul class=\"list-group row\">\n";
                 foreach (string fileName in files)
                 {
                     string strippedName = separateFileNameForHTML(fileName);
                     fileNameList.Add(strippedName);
-                    htmlPageContent += "<a href=\"" + "file:///" + fullPath + strippedName + ".html" + "\">" +
-                                       strippedName + ".html" + "</a>" + "<br>";
+                    htmlPageContent += "<li class=\"list-group-item col-xs-6\"><a href=\"" + "file:///" + fullPath + strippedName + ".html" + "\">" +
+                                       strippedName + ".html" + "</a>" + "<br></li>\n";
                 }
+
+                htmlPageContent += "</ul>\n";
+                htmlPageContent += "</div>\n";
                 
 
-                Console.WriteLine(file);
                 List<FileStructure> currentFileStructure = new List<FileStructure>();
 
                 foreach (FileStructure structure in fileStructureList)
                 {
                     if (structure.fileName == file)
                     {
-                        Console.WriteLine(structure.type + "--" + structure.beginLine + "--" + structure.endLine);
                         currentFileStructure.Add(structure);
                     }
                 }

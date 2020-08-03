@@ -1,24 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Post_Processor_System
 {
-    static class Program
+    public static class PostProcessor
     {
-        private static string htmlPageContent;
-        
-        static void generateFileList(List<string> files)
+
+        public static List<string> getContentBetweenLines(string fileName, int beginLine, int endLine)
         {
-            foreach (string file in files)
+            List<string> contentList = new List<string>();
+
+            Console.WriteLine("FileName: " + fileName + "Lines: " + beginLine + "->" + endLine);
+            for (int i = beginLine; i < endLine; i++)
             {
-                htmlPageContent += "<a href=\"" + file + "\">" + file + "</a>";
+                string content = File.ReadLines(fileName).Skip(i).Take(endLine - i).First();
+                string replacedContent = replaceHTMLSpecialCharacters(content);
+                contentList.Add(replacedContent);
             }
 
-            File.WriteAllText(@"C:\Users\Kamin\Documents\GitHub\CSE681-Software-Modeling\HTML_Project\testing.html", htmlPageContent);
+            return contentList;
         }
 
-        
+        static string replaceHTMLSpecialCharacters(string content)
+        {
+            string replacedContent = "";
+            replacedContent = content.Replace("&", "&amp");
+            replacedContent = replacedContent.Replace("<", "&lt");
+            return replacedContent;
+        }
         
         static void Main(string[] args)
         {
