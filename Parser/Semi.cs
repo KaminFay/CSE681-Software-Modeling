@@ -131,11 +131,12 @@ namespace CSsemi
 
     public CSemiExp()
     {
-      toker = new CToker {returnComments = true};
+      toker = new CToker();
       semiExp = new List<string>();
       discardComments = true;  // not implemented yet
       returnNewLines = true;
       displayNewLines = false;
+      toker.returnComments = true;
     }
 
     //----< test for equality >------------------------------------------
@@ -198,6 +199,8 @@ namespace CSsemi
 
     bool isTerminator(string tok)
     {
+      if (tok.StartsWith("//") || tok.StartsWith("/*"))
+        return true;
       switch(tok)
       {
         case ";" : return true;

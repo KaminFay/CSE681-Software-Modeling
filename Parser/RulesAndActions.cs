@@ -392,35 +392,6 @@ namespace CodeAnalysis
   /////////////////////////////////////////////////////////
   // rule to dectect function definitions
 
-  public class DetectComment : ARule
-  {
-    public static bool isSpecialToken(string token)
-    {
-      string[] SpecialToken = {"//", "/*", "*/"};
-      foreach (string stoken in SpecialToken)
-        if (stoken == token)
-          return true;
-      return false;
-    }
-    
-    public override bool test(CSsemi.CSemiExp semi)
-    {
-      Display.displayRules(actionDelegate, "rule   DetectComment");
-      if (semi[semi.count - 1] != "{")
-        return false;
-
-      int index = semi.FindFirst("(");
-      if (index > 0 && !isSpecialToken(semi[index - 1]))
-      {
-        CSsemi.CSemiExp local = new CSsemi.CSemiExp();
-        local.Add("function").Add(semi[index - 1]);
-        doActions(local);
-        return true;
-      }
-      return false;
-    }
-  }
-
   public class DetectFunction : ARule
   {
     public static bool isSpecialToken(string token)
@@ -445,6 +416,36 @@ namespace CodeAnalysis
         doActions(local);
         return true;
       }
+      return false;
+    }
+  }
+
+  public class DoComment : AAction
+  {
+    public DoComment(Repository repo)
+    {
+      repo_ = repo;
+    }
+
+    public override void doAction(CSsemi.CSemiExp semi)
+    {
+      Console.WriteLine("\n\nCommentDetected {0}\n\n", repo_.semi.lineCount);
+      semi.display();
+    }
+  }
+
+  public class DetectComment : ARule
+  {
+    public override bool test(CSsemi.CSemiExp semi)
+    {
+      Display.displayRules(actionDelegate, "rule  DetectComment");
+      if (semi.Contains("//") != -1 || semi.Contains("/*") != -1)
+      {
+        Console.WriteLine("\n\n Found Comment \n\n");
+        doActions(semi);
+        return true;
+      }
+
       return false;
     }
   }
@@ -547,6 +548,7 @@ namespace CodeAnalysis
       parser.add(detectNS);
 
       DetectComment detectCM = new DetectComment();
+      DoComment doComment = new DoComment(repo);
       detectCM.add(push);
       parser.add(detectCM);
 
