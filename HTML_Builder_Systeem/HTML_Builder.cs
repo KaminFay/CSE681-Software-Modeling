@@ -89,11 +89,6 @@ namespace HTML_Builder_System
                 return fileName.Substring(fileName.LastIndexOf(@"\") + 1);
             }
 
-            static void build()
-            {
-                htmlPageContent += buildHTMLHeader();
-            }
-
             static void topOfCollapsablePanel(string type, string title, int begin, int end, int iteration)
             {
                 string tag = type + title.Replace(" ", "") + "_" + iteration;
@@ -114,7 +109,6 @@ namespace HTML_Builder_System
             {
                 int iteration = 0;
                 
-
                 foreach (var currentType in currentFileStructure.ToList())
                 {
                     if (currentType.cataloged == true)
@@ -151,23 +145,97 @@ namespace HTML_Builder_System
                     {
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
                     }
-
                     iteration++;
-                    //bottomOfCollapsablePanel();
                 }
             }
 
             static string generateInteralContent(List<string> contentList)
             {
+                /*=INFO
+                 * Testing
+                 * INFO
+                 */
+                
+                /*=WARNING
+                 Testing
+                 Warning
+                 */
+                
                 string bodyContent = "";
                 bodyContent += "<pre><p>";
+                List<String> multiLineComment = new List<string>();
+                Boolean multi = false;
+                
                 foreach(string content in contentList)
                 {
-                    bodyContent += content + "\n";
+                    if(content.Trim().StartsWith("//") && multi == false)
+                    {
+                        bodyContent += markUpSingleLineComment(content);
+                    }else if (content.Trim().StartsWith("*/") && multi == true)
+                    {
+                        multiLineComment.Add(content);
+                        bodyContent += markUpMultiLineComment(multiLineComment);
+                        multiLineComment.Clear();
+                        multi = false;
+                    }else if (!content.Trim().StartsWith("//") && !content.Trim().StartsWith("/*") && multi == false)
+                    {
+                        bodyContent += content + "\n";
+                    }
+                    else if (content.Trim().StartsWith("/*") || multi == true)
+                    {
+                        multiLineComment.Add(content);
+                        multi = true;
+                    }
                 }
 
                 bodyContent += "</p></pre>";
                 return bodyContent;
+            }
+
+            static string markUpMultiLineComment(List<String> commentLines)
+            {
+                String formattedComment = "";
+                //=INFO Testing Info
+                //=WARNING Testing Warning
+                if (commentLines[0].Trim().Contains("=INFO"))
+                {
+                    foreach (String comment in commentLines)
+                    {
+                        formattedComment += "<span style=\"background-color: #03fc0f\">" + comment + "</span><br>\n";
+                    }
+                }else if (commentLines[0].Trim().Contains("=WARNING"))
+                {
+                    foreach (String comment in commentLines)
+                    {
+                        formattedComment += "<span style=\"background-color: #fc031c\">" + comment + "</span><br>\n";
+                    }
+                }
+                else
+                {
+                    foreach (String comment in commentLines)
+                    {
+                        formattedComment += comment + "\n";
+                    }
+                }
+
+                return formattedComment;
+            }
+
+            static string markUpSingleLineComment(string comment)
+            {
+                //=INFO Testing Info
+                //=WARNING Testing Warning
+                if (comment.Trim().Contains("=INFO"))
+                {
+                    return "<span style=\"background-color: #03fc0f\">" + comment + "</span><br>";
+                }else if (comment.Trim().Contains("=WARNING"))
+                {
+                    return "<span style=\"background-color: #fc031c\">" + comment + "</span><br>";
+                }
+                else
+                {
+                    return comment;
+                }
             }
 
             static void bottomOfCollapsablePanel()
@@ -178,9 +246,12 @@ namespace HTML_Builder_System
                 htmlPageContent += "</div>\n";
             }
 
+            /* Testing Comment
+             */
             public static void buildPageContent(string file, List<string> files)
             {
 
+                //Test internal Comments.
                 htmlPageContent += buildHTMLHeader();
 
 

@@ -198,6 +198,28 @@ namespace CodeAnalysis
     }
     public override void doAction(CSsemi.CSemiExp semi)
     {
+
+      if (semi[0].StartsWith("//") || semi[0].StartsWith("/*"))
+      {
+        Console.WriteLine("Comment HEREERERERERER.");
+        ++repo_.scopeCount;
+        Elem commentElm = new Elem();
+        commentElm.type = "Comment";
+        commentElm.name = semi[0];
+        repo_.stack.push(commentElm);
+        if (AAction.displayStack)
+          repo_.stack.display();
+        if (AAction.displaySemi)
+        {
+          Console.Write("\n  line# {0,-5}", repo_.semi.lineCount - 1);
+          Console.Write("entering ");
+          string indent = new string(' ', 2 * repo_.stack.count);
+          Console.Write("{0}", indent);
+          this.display(semi); // defined in abstract action
+        }
+        return;
+      }
+      
       Display.displayActions(actionDelegate, "action PushStack");
       ++repo_.scopeCount;
       Elem elem = new Elem();

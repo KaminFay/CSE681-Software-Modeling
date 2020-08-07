@@ -17,7 +17,6 @@ namespace Post_Processor_System
         {
             List<string> contentList = new List<string>();
 
-            Console.WriteLine("FileName: " + fileName + "Lines: " + beginLine + "->" + endLine);
             for (int i = beginLine; i < endLine; i++)
             {
                 string content = File.ReadLines(fileName).Skip(i).Take(endLine - i).First();
