@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using Post_Processor_System;
 
 namespace HTML_Builder_System
 {
@@ -33,8 +33,7 @@ namespace HTML_Builder_System
 
     public static class HTML_Builder
         {
-            private static object locker = new Object();
-            private static string fullPath = @"C:\Users\Kamin\Documents\GitHub\CSE681-Software-Modeling\HTML_Project\";
+            private static string fullPath = @"HTML_Project\";
             private static string htmlPageContent;
 
             private static List<FileStructure> fileStructureList = new List<FileStructure>();
@@ -97,12 +96,23 @@ namespace HTML_Builder_System
                 htmlPageContent += "<div class=\"panel panel-default\">\n";
                 htmlPageContent += "<div class=\"panel-heading\">\n";
                 htmlPageContent += "<h4 class=\"panel-title\">\n";
-                htmlPageContent += "<a data-toggle=\"collapse\" href=\"#" + tag + "\">" +
-                                   type + ": " + title + "Line: " + begin + "->" + end + " " + "</a>\n";
+                htmlPageContent += "<a data-toggle=\"collapse\" href=\"#" + tag + "\">" + title;
+                if (type.Equals("namespace"))
+                {
+                    htmlPageContent += ";</a>\n";
+                }
+                else if(type.Equals("class"))
+                {
+                    htmlPageContent += "{</a>\n";
+                }
+                else
+                {
+                    htmlPageContent += "</a>\n";
+                }
+
                 htmlPageContent += "</h4>\n";
                 htmlPageContent += "</div>\n";
                 htmlPageContent += "<div id=\"" + tag + "\" class=\"panel-collapse collapse\">\n";
-                //htmlPageContent += "<div class=\"panel-body\">\n";
             }
 
             static void buildCollapsablePanel(List<FileStructure> currentFileStructure)
@@ -125,16 +135,14 @@ namespace HTML_Builder_System
                             htmlPageContent += "</div>\n";
                         }
 
-                        topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine,
-                            currentType.endLine, iteration);
+                        topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine, currentType.endLine, iteration);
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
                         buildCollapsablePanel(currentFileStructure.ToList());
                     }
                     else if (currentType.type == "function" && currentType.name != "if" && currentType.name != "for" &&
                              currentType.name != "while" && currentType.name != "foreach")
                     {
-                        topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine,
-                            currentType.endLine, iteration);
+                        topOfCollapsablePanel(currentType.type, currentType.name, currentType.beginLine, currentType.endLine, iteration);
                         currentFileStructure.ElementAt(currentFileStructure.IndexOf(currentType)).cataloged = true;
                         currentType.bodyContent = generateInteralContent(currentType.contentList);
                         htmlPageContent += currentType.bodyContent;
@@ -149,18 +157,9 @@ namespace HTML_Builder_System
                 }
             }
 
+            //TODO move the comment processing over to the post processor
             static string generateInteralContent(List<string> contentList)
             {
-                /*=INFO
-                 * Testing
-                 * INFO
-                 */
-                
-                /*=WARNING
-                 Testing
-                 Warning
-                 */
-                
                 string bodyContent = "";
                 bodyContent += "<pre><p>";
                 List<String> multiLineComment = new List<string>();
@@ -171,7 +170,7 @@ namespace HTML_Builder_System
                     if(content.Trim().StartsWith("//") && multi == false)
                     {
                         bodyContent += markUpSingleLineComment(content);
-                    }else if (content.Trim().StartsWith("*/") && multi == true)
+                    }else if (content.Trim().StartsWith("*/") && multi == true )
                     {
                         multiLineComment.Add(content);
                         bodyContent += markUpMultiLineComment(multiLineComment);
@@ -180,8 +179,7 @@ namespace HTML_Builder_System
                     }else if (!content.Trim().StartsWith("//") && !content.Trim().StartsWith("/*") && multi == false)
                     {
                         bodyContent += content + "\n";
-                    }
-                    else if (content.Trim().StartsWith("/*") || multi == true)
+                    }else if ((content.Trim().StartsWith("/*") && multi == false) || (content.Trim().StartsWith("/*") || multi == true))
                     {
                         multiLineComment.Add(content);
                         multi = true;
@@ -195,19 +193,17 @@ namespace HTML_Builder_System
             static string markUpMultiLineComment(List<String> commentLines)
             {
                 String formattedComment = "";
-                //=INFO Testing Info
-                //=WARNING Testing Warning
                 if (commentLines[0].Trim().Contains("=INFO"))
                 {
                     foreach (String comment in commentLines)
                     {
-                        formattedComment += "<span style=\"background-color: #03fc0f\">" + comment + "</span><br>\n";
+                        formattedComment += "<mark style=\"background-color: #03fc0f\">" + comment + "</mark><br>\n";
                     }
                 }else if (commentLines[0].Trim().Contains("=WARNING"))
                 {
                     foreach (String comment in commentLines)
                     {
-                        formattedComment += "<span style=\"background-color: #fc031c\">" + comment + "</span><br>\n";
+                        formattedComment += "<mark style=\"background-color: #fc031c\">" + comment + "</mark><br>\n";
                     }
                 }
                 else
@@ -227,10 +223,10 @@ namespace HTML_Builder_System
                 //=WARNING Testing Warning
                 if (comment.Trim().Contains("=INFO"))
                 {
-                    return "<span style=\"background-color: #03fc0f\">" + comment + "</span><br>";
+                    return "<mark style=\"background-color: #03fc0f\">" + comment + "</mark><br>";
                 }else if (comment.Trim().Contains("=WARNING"))
                 {
-                    return "<span style=\"background-color: #fc031c\">" + comment + "</span><br>";
+                    return "<mark style=\"background-color: #fc031c\">" + comment + "</mark><br>";
                 }
                 else
                 {
@@ -246,15 +242,38 @@ namespace HTML_Builder_System
                 htmlPageContent += "</div>\n";
             }
 
-            /* Testing Comment
-             */
+            public static void buildDependencyContent(string file)
+            {
+                htmlPageContent += "<div class = \"fileList\" style=\"text-align:center\">\n";
+                htmlPageContent += "<h3>Active Dependencies for current file: </3>\n";
+                htmlPageContent += "<ul class=\"list-group row\">\n";
+
+                List<string> dependencies = PostProcessor.returnListOfDependencies(file);
+                if (!dependencies.Any())
+                {
+                    htmlPageContent += "<li class=\"list-group-item col-xs-6\"><a href=\"" + "" + "\">" +
+                                       "No dependencies" + "</a>" + "<br></li>\n";                
+                }
+                else
+                {
+                    foreach (string depend in dependencies)
+                    {
+                        string strippedName = separateFileNameForHTML(depend);
+                        htmlPageContent += "<li class=\"list-group-item col-xs-6\"><a href=\"" + "file:///" + fullPath + strippedName + ".html" + "\">" +
+                                           strippedName + ".html" + "</a>" + "<br></li>\n";
+                    }   
+                }
+
+
+                htmlPageContent += "</ul>\n";
+                htmlPageContent += "</div>\n";
+            }
+
             public static void buildPageContent(string file, List<string> files)
             {
 
-                //Test internal Comments.
                 htmlPageContent += buildHTMLHeader();
-
-
+                
                 htmlPageContent += "<div class = \"fileList\" style=\"text-align:center\">\n";
                 htmlPageContent += "<h2>Project File List: </h2>\n";
                 htmlPageContent += "<ul class=\"list-group row\">\n";
@@ -268,6 +287,8 @@ namespace HTML_Builder_System
 
                 htmlPageContent += "</ul>\n";
                 htmlPageContent += "</div>\n";
+
+                buildDependencyContent(file);
                 
 
                 List<FileStructure> currentFileStructure = new List<FileStructure>();
@@ -290,9 +311,6 @@ namespace HTML_Builder_System
                 currentFileStructure.Clear();
             }
 
-            static void Main(string[] args)
-            {
-                Console.WriteLine("Hello World!");
-            }
+
         }
     }

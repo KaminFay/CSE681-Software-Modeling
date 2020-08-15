@@ -5,4 +5,8 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Post_Processor_System\Post_Processor_System.csproj" />
+    </ItemGroup>
+
 </Project>

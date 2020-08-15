@@ -413,7 +413,6 @@ namespace CStoker
         {
           lineRemainder = lineRemainder.Remove(lineRemainder.Length-1,1);
           tokBuffer.Add(lineRemainder);
-          //Console.WriteLine(tokBuffer[0]);
           return "\n";
         }
         else

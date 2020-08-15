@@ -15,68 +15,80 @@ namespace CSharp_Analyzer_Core
             List<string> contentList = new List<string>();
             foreach (string file in CSharpFiles)
             {
-              Console.Write("\n  Processing file {0}\n", System.IO.Path.GetFileName(file));
+                Console.Write("\n  Processing file {0}\n", System.IO.Path.GetFileName(file));
             
-              CSsemi.CSemiExp semi = new CSsemi.CSemiExp();
-              semi.displayNewLines = false;
-              if (!semi.open(file as string))
-              {
-                Console.Write("\n  Can't open {0}\n\n", args[0]);
-                return;
-              }
+                CSsemi.CSemiExp semi = new CSsemi.CSemiExp();
+                semi.displayNewLines = false;
+                if (!semi.open(file))
+                {
+                  Console.Write("\n  Can't open {0}\n\n", args[0]);
+                  return;
+                }
             
-              Console.Write("\n  Type and Function Analysis");
-              Console.Write("\n ----------------------------");
-            
-              BuildCodeAnalyzer builder = new BuildCodeAnalyzer(semi);
-              Parser parser = builder.build();
-            
-              try
-              {
-                while (semi.getSemi())
-                  parser.parse(semi);
-                Console.Write("\n  locations table contains:");
-              }
-              catch (Exception ex)
-              {
-                Console.Write("\n\n  {0}\n", ex.Message);
-              }
-              Repository rep = Repository.getInstance();
-              List<Elem> table = rep.locations;
-              Console.Write(
-                "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}",
-                "category", "name", "bLine", "eLine", "bScop", "eScop", "size", "cmplx"
-              );
-              Console.Write(
-                "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}",
-                "--------", "----", "-----", "-----", "-----", "-----", "----", "-----"
-              );
-              foreach (Elem e in table)
-              {
-                if (e.type == "class" || e.type == "struct" || e.type == "Comment")
-                  Console.Write("\n");
-                Console.Write(
-                  "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}", 
-                  e.type, e.name, e.beginLine, e.endLine, e.beginScopeCount, e.endScopeCount+1,
-                  e.endLine-e.beginLine+1, e.endScopeCount-e.beginScopeCount+1
-                );
-                if (e.type == "function")
-                  contentList = PostProcessor.getContentBetweenLines(file, e.beginLine, e.endLine);
+                Console.Write("\n  Type and Function Analysis");
+                Console.Write("\n ----------------------------");   
+                BuildCodeAnalyzer builder = new BuildCodeAnalyzer(semi);
+                Parser parser = builder.build();
                 
-                HTML_Builder.buildFileStructure(file, e.type, e.name, e.beginLine, e.endLine, contentList);
-              }
+                try
+                {
+                    while (semi.getSemi())
+                      parser.parse(semi);
+                    Console.Write("\n  locations table contains:");
+                }
+                catch (Exception ex)
+                { 
+                    Console.Write("\n\n  {0}\n", ex.Message);
+                }
+                
+                Repository rep = Repository.getInstance();
+                List<Elem> table = rep.locations;
+                
+                Console.Write(
+                  "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}",
+                  "category", "name", "bLine", "eLine", "bScop", "eScop", "size", "cmplx"
+                );
+                Console.Write(
+                  "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}",
+                  "--------", "----", "-----", "-----", "-----", "-----", "----", "-----"
+                );
+                
+                List<string> functionList = new List<string>();
+                foreach (Elem e in table)
+                {
+                    if (e.type == "class" || e.type == "struct" || e.type == "Comment")
+                      Console.Write("\n");
+                    Console.Write( "\n  {0,10}, {1,25}, {2,5}, {3,5}, {4,5}, {5,5}, {6,5}, {7,5}", 
+                    e.type, e.name, e.beginLine, e.endLine, e.beginScopeCount, e.endScopeCount+1,
+                    e.endLine-e.beginLine+1, e.endScopeCount-e.beginScopeCount+1
+                    );
+                    
+                    if (e.type == "function")
+                    { 
+                        contentList = PostProcessor.getContentBetweenLines(file, e.beginLine, e.endLine);
+                        functionList.Add(e.name);
+                    }
+    
+                    if (e.type == "class" || e.type == "namespace")
+                    {
+                        PostProcessor.addObjectToFile(e.name, file);
+                    }
+                    
+                    HTML_Builder.buildFileStructure(file, e.type, e.name, e.beginLine, e.endLine, contentList);
+                }
             
-              Console.Write("\n");
-              semi.close();
+                PostProcessor.addFileToFileList(functionList, file);
+                Console.Write("\n");
+                semi.close();
             }
+            PostProcessor.buildDependencies(CSharpFiles);
 
             HTML_Builder.generateFileList(CSharpFiles);
             foreach (string file in CSharpFiles)
-            {
-              HTML_Builder.buildPageContent(file.Substring(file.LastIndexOf("\\") +1), CSharpFiles);
+            { 
+                HTML_Builder.buildPageContent(file.Substring(file.LastIndexOf("\\") +1), CSharpFiles);
             }
             Console.Write("\n\n");
-            
         }
     }
 }

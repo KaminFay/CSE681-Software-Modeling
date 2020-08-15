@@ -201,7 +201,6 @@ namespace CodeAnalysis
 
       if (semi[0].StartsWith("//") || semi[0].StartsWith("/*"))
       {
-        Console.WriteLine("Comment HEREERERERERER.");
         ++repo_.scopeCount;
         Elem commentElm = new Elem();
         commentElm.type = "Comment";
@@ -451,7 +450,6 @@ namespace CodeAnalysis
 
     public override void doAction(CSsemi.CSemiExp semi)
     {
-      Console.WriteLine("\n\nCommentDetected {0}\n\n", repo_.semi.lineCount);
       semi.display();
     }
   }
@@ -463,7 +461,6 @@ namespace CodeAnalysis
       Display.displayRules(actionDelegate, "rule  DetectComment");
       if (semi.Contains("//") != -1 || semi.Contains("/*") != -1)
       {
-        Console.WriteLine("\n\n Found Comment \n\n");
         doActions(semi);
         return true;
       }

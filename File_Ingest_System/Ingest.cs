@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Net.Mime;
 
 namespace File_Ingest_System
 {
@@ -11,12 +9,8 @@ namespace File_Ingest_System
         private static string _projectDirectory;
         private static List<string> _CSharpFiles;
 
-        public static string GetProjectDirectory()
-        {
-            return _projectDirectory;
-        }
-
-        public static void SetProjectDirectory(string dir)
+        // Using the passed in reference this will set the current directory of the project.
+        private static void SetProjectDirectory(string dir)
         {
             if (Directory.Exists(dir))
             {
@@ -28,7 +22,8 @@ namespace File_Ingest_System
             }
         }
 
-        public static List<string> SeparateCSharpFiles()
+        //Recursively move through the file structure to locate any and all c# files. Ignoring obj compiled and Assembly files.
+        private static List<string> SeparateCSharpFiles()
         {
             string[] filesInDirectory = Directory.GetFiles(_projectDirectory);
             foreach (string fileName in filesInDirectory)
@@ -50,6 +45,8 @@ namespace File_Ingest_System
             return _CSharpFiles;
         }
 
+        //Overarching generation function, this is called externally to pull all the data required. And handles 
+        //invalid input.
         public static List<string> GenerateFileStructure(string[] args)
         {
             _CSharpFiles = new List<string>();
@@ -58,26 +55,12 @@ namespace File_Ingest_System
                 SetProjectDirectory(args[0]);
             }catch (Exception e)
             {
-                switch (e)
-                {
-                    case IndexOutOfRangeException _:
-                        Console.WriteLine("Not enough arguments please try again");
-                        break;
-                    case InvalidDataException _:
-                        Console.WriteLine(e.Message);
-                        break;
-                }
-
-                System.Environment.Exit(1);
+                Console.WriteLine("Not enough arguments please try again + " + e.Message);
+                Environment.Exit(1);
             }
             
             return SeparateCSharpFiles();
         }
-        
-        public static void Main(string[] args)
-        {
-            
-        }
-        
+
     }
 }
