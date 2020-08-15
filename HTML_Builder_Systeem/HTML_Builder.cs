@@ -33,7 +33,7 @@ namespace HTML_Builder_System
 
     public static class HTML_Builder
         {
-            private static string fullPath = @"HTML_Project\";
+            private static string fullPath = Directory.GetCurrentDirectory() + @"\HTML_Project\";
             private static string htmlPageContent;
 
             private static List<FileStructure> fileStructureList = new List<FileStructure>();
